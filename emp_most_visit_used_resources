@@ -1,0 +1,36 @@
+create table entries ( 
+name varchar(20),
+address varchar(20),
+email varchar(20),
+floor int,
+resources varchar(10));
+ 
+ 
+ insert into entries 
+values ('A','Bangalore','A@gmail.com',1,'CPU');
+insert into entries 
+values ('A','Bangalore','A1@gmail.com',1,'CPU');
+insert into entries 
+values ('A','Bangalore','A2@gmail.com',2,'DESKTOP');
+insert into entries 
+values ('B','Bangalore','B@gmail.com',2,'DESKTOP');
+insert into entries 
+values ('B','Bangalore','B1@gmail.com',2,'DESKTOP');
+insert into entries 
+values ('B','Bangalore','B2@gmail.com',1,'MONITOR');
+commit;
+
+
+with 
+rs as 
+(select name,listagg(distinct resources,',') as used_resources from entries 
+group by name),
+mv as 
+(select name,floor,count(1) as most_no_of_visit,
+dense_rank() over(partition by name order by count(1) desc) as rk 
+from entries 
+group by name,floor  
+order by name) 
+select mv.name,mv.floor,mv.most_no_of_visit,rs.used_resources from mv
+inner join rs on mv.name = rs.name 
+where mv.rk = 1;
